@@ -1,26 +1,26 @@
-from job_search import get_hh_vacancies
-from superjob_parser import get_superjob_vacancies
+import requests
+from hh_parser import get_hh_vacancies
 
 def main():
-    query = input("Введите название вакансии для поиска: ")
-    
-    print("\n🔍 Поиск вакансий на hh.ru...")
-    hh_vacancies = get_hh_vacancies(query)
+    print("🔍 Добро пожаловать в систему умного поиска работы!")
 
-    print("\n🔍 Поиск вакансий на SuperJob...")
-    sj_vacancies = get_superjob_vacancies(query)
+    job_title = input("Введите название вакансии для поиска: ")
+    city_name = input("Введите название города (например, Москва, Краснодар): ")
 
-    all_vacancies = hh_vacancies + sj_vacancies
+    print("\n🔍 Поиск вакансий на HH.ru...")
+    hh_vacancies = get_hh_vacancies(job_title, city_name)
 
-    if not all_vacancies:
-        print("❌ Вакансии не найдены.")
+    if not hh_vacancies:
+        print("\n⚠️ Вакансии не найдены. Попробуйте изменить параметры поиска.")
         return
 
-    print("\n✅ Найденные вакансии:\n")
-    for idx, vacancy in enumerate(all_vacancies):
-        print(f"{idx + 1}. {vacancy['title']} ({vacancy['company']})")
-        print(f"   💰 Зарплата: {vacancy['salary']}")
-        print(f"   🔗 Ссылка: {vacancy['url']}\n")
+    print("\n📋 Найденные вакансии:")
+    for idx, vacancy in enumerate(hh_vacancies, start=1):
+        print(f"\n[{idx}] {vacancy['title']} ({vacancy['company']})")
+        print(f"💰 Зарплата: {vacancy['salary']}")
+        print(f"📍 Город: {vacancy['city']}")
+        print(f"🔗 Ссылка: {vacancy['url']}")
 
 if __name__ == "__main__":
     main()
+
