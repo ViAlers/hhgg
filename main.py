@@ -1,26 +1,47 @@
-import requests
-from hh_parser import get_hh_vacancies
+# main.py
+from core import HHApiClient, ResumeGenerator
+import sys
+
+def print_menu():
+    print("\n" + "="*50)
+    print("1. Поиск вакансий")
+    print("2. Выход")
+    print("="*50)
 
 def main():
-    print("🔍 Добро пожаловать в систему умного поиска работы!")
-
-    job_title = input("Введите название вакансии для поиска: ")
-    city_name = input("Введите название города (например, Москва, Краснодар): ")
-
-    print("\n🔍 Поиск вакансий на HH.ru...")
-    hh_vacancies = get_hh_vacancies(job_title, city_name)
-
-    if not hh_vacancies:
-        print("\n⚠️ Вакансии не найдены. Попробуйте изменить параметры поиска.")
-        return
-
-    print("\n📋 Найденные вакансии:")
-    for idx, vacancy in enumerate(hh_vacancies, start=1):
-        print(f"\n[{idx}] {vacancy['title']} ({vacancy['company']})")
-        print(f"💰 Зарплата: {vacancy['salary']}")
-        print(f"📍 Город: {vacancy['city']}")
-        print(f"🔗 Ссылка: {vacancy['url']}")
+    try:
+        client = HHApiClient()
+        generator = ResumeGenerator()
+        
+        while True:
+            print_menu()
+            choice = input("Выберите действие: ")
+            
+            if choice == '1':
+                search_query = input("Введите поисковый запрос для вакансий: ")
+                
+                if vacancies := client.get_vacancies(search_query):
+                    print(f"\nНайдено вакансий: {len(vacancies)}")
+                    for idx, vacancy in enumerate(vacancies[:3], 1):
+                        print(f"\n{idx}. {vacancy['name']}")
+                        print(f"Зарплата: {vacancy['salary'] or 'не указана'}")
+                        
+                        resume = generator.generate_for_vacancy(vacancy)
+                        print("\nСгенерированное резюме:")
+                        print(f"Позиция: {resume['position']}")
+                        print(f"\nПрофессиональное резюме:\n{resume['summary']}")
+                        print(f"\nКлючевые навыки:\n{resume['skills']}")
+                        print(f"\nОпыт:\n{resume['experience']}")
+                else:
+                    print("Не удалось получить вакансии. Попробуйте изменить запрос.")
+            elif choice == '2':
+                print("Выход из программы")
+                sys.exit()
+            else:
+                print("Неверный выбор, попробуйте снова")
+    except Exception as e:
+        print(f"Критическая ошибка: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
-
